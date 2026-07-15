@@ -1,0 +1,601 @@
+<title>Resume Configurator</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #18181F; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; height: 100vh; overflow: hidden; }
+  .app { display: flex; height: 100vh; overflow: hidden; }
+
+  /* ── LEFT PANEL ── */
+  .left {
+    width: 390px; flex-shrink: 0; background: #20202A;
+    border-right: 1px solid #2C2C38; display: flex; flex-direction: column;
+    height: 100vh; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #38384A transparent;
+  }
+  .panel-header {
+    padding: 14px 18px 12px; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase; color: #5CBD92;
+    border-bottom: 1px solid #2C2C38; flex-shrink: 0;
+  }
+  .ctrl-section { padding: 12px 16px; border-bottom: 1px solid #28283A; }
+  .ctrl-label { font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #4E4C64; margin-bottom: 9px; }
+
+  .bio-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+  .bio-pill {
+    font-size: 10px; font-weight: 600; padding: 4px 9px; border-radius: 4px;
+    border: 1.5px solid #30303C; background: #272732; color: #68667A;
+    cursor: pointer; transition: all 0.1s; letter-spacing: 0.04em;
+  }
+  .bio-pill:hover { border-color: #44445A; color: #9A98AE; }
+  .bio-pill.active { border-color: #5CBD92; background: rgba(92,189,146,0.1); color: #5CBD92; }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chip {
+    font-size: 10.5px; padding: 4px 8px; border-radius: 4px;
+    border: 1.5px solid #30303C; background: #272732; color: #787690;
+    cursor: pointer; transition: all 0.1s; line-height: 1.2;
+  }
+  .chip:hover { border-color: #44445A; color: #AEACBE; }
+  .chip.active { border-color: #5CBD92; background: rgba(92,189,146,0.09); color: #5CBD92; }
+
+  .slot-list { display: flex; flex-direction: column; }
+  .bullet-slot {
+    display: flex; align-items: flex-start; gap: 8px; padding: 8px 0;
+    border-bottom: 1px solid #252535; border-radius: 4px;
+  }
+  .bullet-slot:last-child { border-bottom: none; }
+  .slot-body { flex: 1; min-width: 0; }
+  .slot-name { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #5CBD92; margin-bottom: 5px; }
+  .slot-opts { display: flex; flex-wrap: wrap; gap: 3px; }
+  .opt-btn {
+    font-size: 9.5px; font-weight: 500; padding: 3px 7px; border-radius: 3px;
+    border: 1.5px solid #2E2E3C; background: #24242E; color: #5A5870;
+    cursor: pointer; transition: all 0.1s; white-space: nowrap;
+  }
+  .opt-btn:hover { border-color: #40405A; color: #8A88A0; }
+  .opt-btn.active { border-color: #5CBD92; background: rgba(92,189,146,0.1); color: #5CBD92; }
+  .opt-btn.fixed { opacity: 0.38; cursor: default; pointer-events: none; }
+  .opt-btn.hide-opt { color: #3E3C52; border-color: #2A2A3A; }
+  .opt-btn.hide-opt.active { color: #C06060; border-color: #804040; background: rgba(192,96,96,0.1); }
+
+  .tog-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .tog-row:last-child { margin-bottom: 0; }
+  .tog-label { font-size: 11px; color: #787690; flex: 1; }
+  .btn-group { display: flex; gap: 3px; }
+  .tbtn {
+    font-size: 10px; font-weight: 500; padding: 4px 8px; border-radius: 4px;
+    border: 1.5px solid #2E2E3C; background: #24242E; color: #5A5870;
+    cursor: pointer; transition: all 0.1s; white-space: nowrap;
+  }
+  .tbtn:hover { border-color: #40405A; color: #9A98AE; }
+  .tbtn.active { border-color: #5CBD92; background: rgba(92,189,146,0.1); color: #5CBD92; }
+
+  .cmd-box { background: #161620; border: 1px solid #28283A; border-radius: 6px; padding: 10px 12px; }
+  .name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .name-lbl { font-size: 9px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #3E3C52; white-space: nowrap; }
+  .name-input {
+    flex: 1; background: #1E1E2A; border: 1px solid #2E2E3C; border-radius: 4px;
+    color: #C0BED0; font-family: 'SF Mono','Cascadia Code','Fira Code',monospace;
+    font-size: 10.5px; padding: 4px 7px; outline: none;
+  }
+  .name-input:focus { border-color: #5CBD92; }
+  .cmd-hint { font-size: 9px; color: #4E4C64; margin-bottom: 6px; }
+  .cmd-text { font-family: 'SF Mono','Cascadia Code','Fira Code',monospace; font-size: 10px; color: #5CBD92; line-height: 1.65; word-break: break-all; white-space: pre-wrap; }
+  .copy-btn {
+    margin-top: 9px; width: 100%; padding: 7px;
+    background: rgba(92,189,146,0.08); border: 1.5px solid rgba(92,189,146,0.25); border-radius: 4px;
+    color: #5CBD92; font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+    cursor: pointer; transition: all 0.12s; text-transform: uppercase;
+  }
+  .copy-btn:hover { background: rgba(92,189,146,0.16); border-color: #5CBD92; }
+  .copy-btn.ok { color: #C8EED8; background: rgba(92,189,146,0.22); }
+
+  /* ── RIGHT PANEL ── */
+  .right { flex: 1; overflow-y: auto; background: #D8D6D2; padding: 24px 28px; display: flex; justify-content: center; align-items: flex-start; }
+  .doc { background: #FFFFFF; width: 100%; max-width: 660px; padding: 30px 34px 34px; box-shadow: 0 1px 4px rgba(0,0,0,0.10), 0 4px 20px rgba(0,0,0,0.07); border-radius: 2px; }
+  .doc-name { font-size: 17px; font-weight: 700; color: #141418; letter-spacing: -0.01em; margin-bottom: 3px; }
+  .doc-contact { font-size: 10px; color: #999; padding-bottom: 13px; border-bottom: 1.5px solid #E4E2DE; margin-bottom: 16px; }
+  .rsec { margin-bottom: 16px; }
+  .rsec:last-child { margin-bottom: 0; }
+  .rsec-head { font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #1A1A1E; border-bottom: 1px solid #D4D2CE; padding-bottom: 3px; margin-bottom: 8px; }
+  .bio-para { font-size: 11.5px; line-height: 1.6; color: #2A2A2E; }
+  .job-hdr { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 5px; }
+  .job-title-line { font-size: 11.5px; font-weight: 600; color: #1A1A1E; }
+  .job-title-line .dept { font-weight: 400; color: #444; }
+  .job-date { font-size: 10.5px; color: #999; white-space: nowrap; }
+  .blist { list-style: none; padding: 0; margin-bottom: 6px; }
+  .blist li { font-size: 11px; line-height: 1.56; color: #282828; padding-left: 13px; position: relative; margin-bottom: 3px; }
+  .blist li::before { content: '•'; position: absolute; left: 0; color: #BBBBBB; }
+  .stack-line { font-size: 10px; color: #666; margin-bottom: 6px; }
+  .stack-line strong { color: #3A3A3E; }
+  .cert-row { display: flex; justify-content: space-between; font-size: 11.5px; color: #2A2A2E; }
+  .skills-blurb { font-size: 11px; line-height: 1.6; color: #282828; }
+  .skills-blurb strong { color: #1A1A1E; }
+  .role-gap { margin-top: 9px; }
+</style>
+
+<div class="app">
+  <div class="left">
+    <div class="panel-header">Resume Configurator</div>
+
+    <div class="ctrl-section">
+      <div class="ctrl-label">Layout</div>
+      <div class="btn-group">
+        <button class="tbtn" id="lay-threeroles" onclick="setLayout('threeroles')">Three roles</button>
+        <button class="tbtn" id="lay-research" onclick="setLayout('research')">Research</button>
+        <button class="tbtn" id="lay-portfolio" onclick="setLayout('portfolio')">Portfolio</button>
+      </div>
+    </div>
+
+    <div class="ctrl-section">
+      <div class="ctrl-label">Bio</div>
+      <div class="bio-pills" id="bio-pills"></div>
+    </div>
+
+    <div class="ctrl-section">
+      <div class="ctrl-label">Team label (current role)</div>
+      <div class="chip-row" id="team-chips"></div>
+    </div>
+
+    <div class="ctrl-section">
+      <div class="ctrl-label">Northwind Analytics — bullets</div>
+      <div class="slot-list" id="ja-slot-list"></div>
+    </div>
+
+    <div class="ctrl-section">
+      <div class="ctrl-label">Lakeshore Labs — bullets</div>
+      <div class="slot-list" id="jb-slot-list"></div>
+    </div>
+
+    <div class="ctrl-section">
+      <div class="ctrl-label">Internship &amp; Research</div>
+      <div class="slot-list" id="misc-slot-list"></div>
+    </div>
+
+    <div class="ctrl-section">
+      <div class="ctrl-label">Portfolio Project</div>
+      <div class="tog-row">
+        <span class="tog-label">Bullets 1 &amp; 3 framing</span>
+        <div class="btn-group">
+          <button class="tbtn" id="pf-systems" onclick="set('projfocus','systems')">Systems</button>
+          <button class="tbtn" id="pf-product" onclick="set('projfocus','product')">Product</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ctrl-section">
+      <div class="ctrl-label">Skills &amp; Sections</div>
+      <div class="tog-row">
+        <span class="tog-label">Systems &amp; Infrastructure</span>
+        <div class="btn-group">
+          <button class="tbtn" id="sk-sys-show" onclick="set('showsys',true)">Show</button>
+          <button class="tbtn" id="sk-sys-hide" onclick="set('showsys',false)">Hide</button>
+        </div>
+      </div>
+      <div class="tog-row">
+        <span class="tog-label">On-Call (in Systems line)</span>
+        <div class="btn-group">
+          <button class="tbtn" id="oc-show" onclick="set('showoncall',true)">Show</button>
+          <button class="tbtn" id="oc-hide" onclick="set('showoncall',false)">Hide</button>
+        </div>
+      </div>
+      <div class="tog-row">
+        <span class="tog-label">Product &amp; Web</span>
+        <div class="btn-group">
+          <button class="tbtn" id="sk-web-show" onclick="set('showweb',true)">Show</button>
+          <button class="tbtn" id="sk-web-hide" onclick="set('showweb',false)">Hide</button>
+        </div>
+      </div>
+      <div class="tog-row">
+        <span class="tog-label">Collaboration</span>
+        <div class="btn-group">
+          <button class="tbtn" id="sk-comm-show" onclick="set('showcomm',true)">Show</button>
+          <button class="tbtn" id="sk-comm-hide" onclick="set('showcomm',false)">Hide</button>
+        </div>
+      </div>
+      <div class="tog-row">
+        <span class="tog-label">Languages</span>
+        <div class="btn-group">
+          <button class="tbtn" id="sk-prog-show" onclick="set('showprog',true)">Show</button>
+          <button class="tbtn" id="sk-prog-hide" onclick="set('showprog',false)">Hide</button>
+        </div>
+      </div>
+      <div class="tog-row">
+        <span class="tog-label">Languages ordering</span>
+        <div class="btn-group">
+          <button class="tbtn" id="sl-gofirst" onclick="set('sline','gofirst')">Go-first</button>
+          <button class="tbtn" id="sl-tsfirst" onclick="set('sline','tsfirst')">TS-first</button>
+        </div>
+      </div>
+      <div style="border-top:1px solid #28283A;margin:7px 0 5px;"></div>
+      <div class="tog-row">
+        <span class="tog-label">Certifications section</span>
+        <div class="btn-group">
+          <button class="tbtn" id="sc-show" onclick="set('showcert',true)">Show</button>
+          <button class="tbtn" id="sc-hide" onclick="set('showcert',false)">Hide</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ctrl-section">
+      <div class="ctrl-label">Build Command</div>
+      <div class="cmd-box">
+        <div class="name-row">
+          <span class="name-lbl">PDF name</span>
+          <input class="name-input" id="pdf-name" type="text" value="Rivera_general" oninput="renderCmd()">
+        </div>
+        <div class="cmd-hint">Run from the repo root. Logs the configuration to applications.log, then compiles.</div>
+        <code class="cmd-text" id="cmd-out"></code>
+        <button class="copy-btn" id="copy-btn" onclick="copyCmd()">Copy command</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="doc" id="doc"></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────────────
+// Bullet text is duplicated from resume_flex.tex — keep the two in sync.
+// (See docs/EXTENDING.md, "Keeping the configurator in sync".)
+const BIOS = {
+  general: { text:'Software engineer with five years of experience building backend services and the product features on top of them. Comfortable owning a feature from API design through frontend delivery, with a track record of improving reliability and performance along the way.' },
+  systems: { text:'Software engineer specializing in backend systems and data infrastructure: high-throughput APIs, streaming pipelines, and the observability that keeps them reliable. Cut latency, incident load, and infrastructure costs on services handling millions of requests per day.' },
+  product: { text:'Product-minded software engineer who ships user-facing features end to end, from API design to frontend polish, in close collaboration with design and product. Known for fast, well-instrumented launches that hold up under real traffic.' },
+};
+
+const TEAMS = [
+  { label:'Platform',             latex:'Platform' },
+  { label:'Growth',               latex:'Growth' },
+  { label:'Data Infrastructure',  latex:'Data Infrastructure' },
+  { label:'Developer Experience', latex:'Developer Experience' },
+];
+
+const JA_SLOT_DEFS = [
+  {
+    id:'ja1', name:'Dashboards launch',
+    opts:[
+      { tag:'streaming',  text:'Redesigned the ingestion service behind customer dashboards, moving from batch polling to a streaming pipeline (Kafka, Go) and cutting data freshness from 15 minutes to under 30 seconds at 20K events/sec.' },
+      { tag:'dashboards', text:'Led engineering for the real-time dashboards launch, the company’s most-requested feature, partnering with design and product from prototype through GA for 800+ customer accounts.' },
+      { tag:'leadership', text:'Owned the real-time dashboards initiative end to end: scoped the rollout with product, coordinated two other engineers, and shipped the streaming backend that took data freshness from 15 minutes to under 30 seconds.' },
+    ]
+  },
+  {
+    id:'ja2', name:'Performance / Reliability',
+    opts:[
+      { tag:'latency',     text:'Cut p99 API latency 60% by profiling hot paths, adding query-level caching, and rewriting the database access patterns of the two worst-offending endpoints.' },
+      { tag:'reliability', text:'Drove the reliability push that took the platform from 99.5% to 99.95% uptime: defined SLOs, added load-shedding, and rewrote the on-call runbook, halving weekly pages.' },
+    ]
+  },
+  {
+    id:'ja3', name:'Optional third bullet',
+    opts:[
+      { tag:'mentoring', text:'Mentored two interns and a new-grad engineer through their first production launches; wrote the onboarding guide now used across the organization.' },
+      { tag:'tooling',   text:'Built internal CLI tooling for service scaffolding and deploy previews, adopted by all six backend teams.' },
+      { tag:'hide',      text:null },
+    ]
+  },
+];
+
+const JB_SLOT_DEFS = [
+  {
+    id:'jb1', name:'Usage analytics',
+    opts:[
+      { tag:'fullstack', text:'Shipped the customer-facing usage-analytics feature end to end (React, TypeScript, Node.js), which became a top-three driver of enterprise renewals.' },
+      { tag:'metering',  text:'Built the metering and usage-aggregation service (Node.js, Postgres) behind customer-facing analytics, processing 5M events per day with exactly-once semantics.' },
+    ]
+  },
+  {
+    id:'jb2', name:'Platform work',
+    opts:[
+      { tag:'migration', text:'Led the migration from a legacy cron-based monolith to containerized workers on Kubernetes, cutting deploy time from 45 minutes to 5 and enabling per-service scaling.' },
+      { tag:'testing',   text:'Introduced contract testing and CI gates across three services, roughly halving production incidents caused by integration bugs.' },
+    ]
+  },
+  {
+    id:'jb3', name:'Team growth (fixed)',
+    opts:[
+      { tag:'hiring', text:'Interviewed and onboarded engineers as the team grew from 4 to 11.' },
+    ]
+  },
+];
+
+const MISC_SLOT_DEFS = [
+  {
+    id:'in1', name:'Internship (threeroles layout)',
+    opts:[
+      { tag:'log search',    text:'Built an indexed log-search web tool for the support team, replacing grep-over-SSH and cutting median ticket investigation time by half.' },
+      { tag:'release notes', text:'Automated release-notes generation from merged pull requests, saving the team several hours per release and standardizing changelog quality.' },
+    ]
+  },
+  {
+    id:'r1', name:'Research (research layout)',
+    opts:[
+      { tag:'harness', text:'Built the benchmarking harness for the lab’s query-optimization research, running 10K+ experiment configurations reproducibly on a shared cluster.' },
+      { tag:'paper',   text:'Co-authored a workshop paper on adaptive query optimization; implemented the prototype and ran all experiments.' },
+    ]
+  },
+];
+
+const FIXED = {
+  internReturn: 'Shipped to production before the internship ended; received and accepted a return offer for a final-year part-time role.',
+  researchInfra: 'Maintained the lab’s shared experiment infrastructure used by six graduate students.',
+  projPipeline: 'Wrote the data pipeline handling schedule changes and feed outages; open source with CI and a reproducible local setup.',
+};
+
+const PROJ = {
+  systems: {
+    b1: 'Built a Go service ingesting live transit feeds (2M+ records/day) with Redis caching and Postgres storage, running with full observability on a $5/month VPS.',
+    b3: 'Load-tested and tuned the ingestion path to absorb 10× feed bursts during citywide service disruptions.',
+  },
+  product: {
+    b1: 'Built and launched a web app answering a real commuter question, “should I leave now or wait?”, from live transit feeds; 1,200 weekly users and a public API.',
+    b3: 'Iterated the UI from user feedback collected in a public issue tracker; published a technical write-up of the architecture.',
+  },
+};
+
+// ── State ─────────────────────────────────────────────────────────────
+let S = {
+  biover: 'general',
+  layout: 'threeroles',
+  team: 0,
+  sel: { ja1:0, ja2:0, ja3:2, jb1:0, jb2:0, jb3:0, in1:0, r1:0 },
+  projfocus: 'systems',
+  sline: 'gofirst',
+  showcert: false,
+  showsys: true,
+  showweb: true,
+  showcomm: false,
+  showprog: true,
+  showoncall: true,
+};
+
+// Maps slot ID → { latexVar, vals[] } where vals[i] is the LaTeX value for option index i
+const SLOT_LATEX = {
+  ja1: { v:'jaone',   vals:['streaming','dashboards','leadership'] },
+  ja2: { v:'jatwo',   vals:['latency','reliability'] },
+  ja3: { v:'jathree', vals:['mentoring','tooling','hide'] },
+  jb1: { v:'jbone',   vals:['fullstack','metering'] },
+  jb2: { v:'jbtwo',   vals:['migration','testing'] },
+  in1: { v:'inone',   vals:['logsearch','releasenotes'] },
+  r1:  { v:'rone',    vals:['harness','paper'] },
+};
+
+// ── HTML helpers ──────────────────────────────────────────────────────
+function rsec(title, body) {
+  return `<div class="rsec"><div class="rsec-head">${title}</div>${body}</div>`;
+}
+function jobHdr(title, meta, date) {
+  const m = meta ? ` — <span class="dept">${meta}</span>` : '';
+  return `<div class="job-hdr"><div class="job-title-line">${title}${m}</div><div class="job-date">${date}</div></div>`;
+}
+function blist(items) {
+  return `<ul class="blist">${items.filter(Boolean).map(t => `<li>${t}</li>`).join('')}</ul>`;
+}
+function stack(s) {
+  return `<div class="stack-line"><strong>Tech Stack:</strong> ${s}</div>`;
+}
+function opt(defs, id) {
+  return defs.find(d => d.id === id).opts[S.sel[id]].text;
+}
+
+// ── Content blocks (mirror the role macros in resume_flex.tex) ────────
+function bioHtml() {
+  return `<div class="bio-para">${BIOS[S.biover].text}</div>`;
+}
+
+function northwindBlock() {
+  return `
+    ${jobHdr('Software Engineer, Northwind Analytics', `${TEAMS[S.team].label} team, Chicago, IL`, '03/2023–Present')}
+    ${blist([opt(JA_SLOT_DEFS,'ja1'), opt(JA_SLOT_DEFS,'ja2'), opt(JA_SLOT_DEFS,'ja3')])}
+    ${stack('Go, TypeScript, Kafka, Postgres, Redis, Kubernetes, Grafana')}`;
+}
+
+function lakeshoreBlock() {
+  return `<div class="role-gap">
+    ${jobHdr('Software Engineer, Lakeshore Labs', 'Chicago, IL', '07/2020–03/2023')}
+    ${blist([opt(JB_SLOT_DEFS,'jb1'), opt(JB_SLOT_DEFS,'jb2'), opt(JB_SLOT_DEFS,'jb3')])}
+    ${stack('TypeScript, Node.js, React, Postgres, Docker, Kubernetes')}
+  </div>`;
+}
+
+function internBlock() {
+  return `<div class="role-gap">
+    ${jobHdr('Software Engineering Intern, Harborview Systems', 'Seattle, WA', '06/2019–09/2019')}
+    ${blist([opt(MISC_SLOT_DEFS,'in1'), FIXED.internReturn])}
+    ${stack('Python, Elasticsearch, Flask')}
+  </div>`;
+}
+
+function researchBlock() {
+  return `
+    ${jobHdr('Research Assistant, Data Systems Lab', 'State University', '09/2018–06/2020')}
+    ${blist([opt(MISC_SLOT_DEFS,'r1'), FIXED.researchInfra])}
+    ${stack('C++, Python, Slurm, Linux')}`;
+}
+
+function projectSection() {
+  const p = PROJ[S.projfocus];
+  return rsec('Portfolio Project', `
+    <div style="font-size:11.5px;font-weight:600;color:#1A1A1E;margin-bottom:6px;">Transit Delay Tracker — open-source project (2025)</div>
+    ${blist([p.b1, FIXED.projPipeline, p.b3])}
+    ${stack('Go, Redis, Postgres, React, GitHub Actions')}`);
+}
+
+function educationSection() {
+  return rsec('Education', `
+    ${jobHdr('BS in Computer Science', 'State University', '2020')}
+    ${blist(['Undergraduate research in the Data Systems Lab; teaching assistant for the databases course.'])}`);
+}
+
+function certSection() {
+  if (!S.showcert) return '';
+  return rsec('Certifications', `<div class="cert-row"><span><strong>AWS Certified Solutions Architect — Associate</strong></span><span>2023</span></div>`);
+}
+
+function skillsSection() {
+  const oncall = S.showoncall ? '; Incident Response &amp; On-Call' : '';
+  const parts = [];
+  if (S.showsys)  parts.push(`<strong>Systems &amp; Infrastructure:</strong> Kafka; Kubernetes; Redis; gRPC; Observability (Prometheus, Grafana); Performance &amp; Load Testing; CI/CD${oncall}`);
+  if (S.showweb)  parts.push('<strong>Product &amp; Web:</strong> React; TypeScript; Node.js; REST &amp; GraphQL API Design; Instrumentation &amp; Feature-Flag Rollouts');
+  if (S.showcomm) parts.push('<strong>Collaboration:</strong> Design Partnership; Mentoring; Technical Writing; Interviewing &amp; Onboarding');
+  if (S.showprog) parts.push(S.sline === 'tsfirst'
+    ? '<strong>Languages:</strong> TypeScript, JavaScript, Go, Python, SQL'
+    : '<strong>Languages:</strong> Go, TypeScript, Python, SQL, C++');
+  return rsec('Skills &amp; Expertise', `<div class="skills-blurb">${parts.join('<br>')}</div>`);
+}
+
+const DOC_HEADER = `
+  <div class="doc-name">Alex Rivera</div>
+  <div class="doc-contact">alex.rivera@example.com · linkedin.com/in/alex-rivera-example · github.com/alexrivera-example</div>`;
+
+// ── Layout renderers ──────────────────────────────────────────────────
+function renderDoc() {
+  if (S.layout === 'research') {
+    return `${DOC_HEADER}
+      ${rsec('Bio', bioHtml())}
+      ${rsec('Industry Experience', northwindBlock() + lakeshoreBlock())}
+      ${projectSection()}
+      ${rsec('Research Experience', researchBlock())}
+      ${educationSection()}
+      ${certSection()}
+      ${skillsSection()}`;
+  }
+  if (S.layout === 'portfolio') {
+    return `${DOC_HEADER}
+      ${rsec('Bio', bioHtml())}
+      ${rsec('Experience', northwindBlock() + lakeshoreBlock())}
+      ${projectSection()}
+      ${educationSection()}
+      ${certSection()}
+      ${skillsSection()}`;
+  }
+  return `${DOC_HEADER}
+    ${rsec('Bio', bioHtml())}
+    ${rsec('Experience', northwindBlock() + lakeshoreBlock() + internBlock())}
+    ${educationSection()}
+    ${certSection()}
+    ${skillsSection()}`;
+}
+
+// ── Render ────────────────────────────────────────────────────────────
+function syncSlotButtons(defs) {
+  defs.forEach(def => {
+    def.opts.forEach((o, i) => {
+      const btn = document.getElementById(`opt-${def.id}-${i}`);
+      if (btn) btn.classList.toggle('active', S.sel[def.id] === i);
+    });
+  });
+}
+
+function render() {
+  ['threeroles','research','portfolio'].forEach(l =>
+    document.getElementById(`lay-${l}`).classList.toggle('active', S.layout === l));
+  document.querySelectorAll('.bio-pill').forEach(p => p.classList.toggle('active', p.dataset.key === S.biover));
+  document.querySelectorAll('.team-chip').forEach((c,i) => c.classList.toggle('active', i === S.team));
+  document.getElementById('pf-systems').classList.toggle('active', S.projfocus === 'systems');
+  document.getElementById('pf-product').classList.toggle('active', S.projfocus === 'product');
+  document.getElementById('sl-gofirst').classList.toggle('active', S.sline === 'gofirst');
+  document.getElementById('sl-tsfirst').classList.toggle('active', S.sline === 'tsfirst');
+  document.getElementById('sc-show').classList.toggle('active', S.showcert);
+  document.getElementById('sc-hide').classList.toggle('active', !S.showcert);
+  document.getElementById('oc-show').classList.toggle('active', S.showoncall);
+  document.getElementById('oc-hide').classList.toggle('active', !S.showoncall);
+  ['sys','web','comm','prog'].forEach(k => {
+    document.getElementById(`sk-${k}-show`).classList.toggle('active', S['show'+k]);
+    document.getElementById(`sk-${k}-hide`).classList.toggle('active', !S['show'+k]);
+  });
+  syncSlotButtons(JA_SLOT_DEFS);
+  syncSlotButtons(JB_SLOT_DEFS);
+  syncSlotButtons(MISC_SLOT_DEFS);
+  document.getElementById('doc').innerHTML = renderDoc();
+  renderCmd();
+}
+
+function renderCmd() {
+  const name = document.getElementById('pdf-name').value || 'Rivera_resume';
+  let defs = `\\def\\biover{${S.biover}}\\def\\layout{${S.layout}}\\def\\teamlabel{${TEAMS[S.team].latex}}` +
+             `\\def\\showcert{${S.showcert?'true':'false'}}`;
+  Object.entries(SLOT_LATEX).forEach(([id, {v, vals}]) => {
+    defs += `\\def\\${v}{${vals[S.sel[id]]}}`;
+  });
+  defs += `\\def\\projfocus{${S.projfocus}}\\def\\sline{${S.sline}}\\def\\showsys{${S.showsys?'true':'false'}}` +
+          `\\def\\showweb{${S.showweb?'true':'false'}}\\def\\showcomm{${S.showcomm?'true':'false'}}` +
+          `\\def\\showprog{${S.showprog?'true':'false'}}\\def\\showoncall{${S.showoncall?'true':'false'}}`;
+  document.getElementById('cmd-out').textContent =
+    `DEFS='${defs}' && printf '%s\\t%s\\t%s\\n' "$(date +%F)" "${name}" "$DEFS" >> applications.log && pdflatex -interaction=nonstopmode -jobname="${name}" "\${DEFS}\\input{resume_flex}" && pdflatex -interaction=nonstopmode -jobname="${name}" "\${DEFS}\\input{resume_flex}" && rm -f "${name}.aux" "${name}.log" "${name}.out"`;
+}
+
+function copyCmd() {
+  const btn = document.getElementById('copy-btn');
+  const text = document.getElementById('cmd-out').textContent;
+  function flash() {
+    btn.textContent = 'Copied!'; btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'Copy command'; btn.classList.remove('ok'); }, 2000);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(flash).catch(() => fallbackCopy(text, flash));
+  } else {
+    fallbackCopy(text, flash);
+  }
+}
+
+function fallbackCopy(text, cb) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try { document.execCommand('copy'); cb(); } catch(e) {}
+  document.body.removeChild(ta);
+}
+
+function set(key, val) { S[key] = val; render(); }
+function setLayout(l) { S.layout = l; render(); }
+function setBio(key) { S.biover = key; document.getElementById('pdf-name').value = 'Rivera_' + key; render(); }
+function setTeam(i) { S.team = i; render(); }
+function setOpt(slotId, optIdx) { S.sel[slotId] = optIdx; render(); }
+
+// ── Slot list builders ─────────────────────────────────────────────────
+function buildSlotList(containerId, defs) {
+  const list = document.getElementById(containerId);
+  list.innerHTML = '';
+  defs.forEach(def => {
+    const row = document.createElement('div');
+    row.className = 'bullet-slot';
+    const isFixed = def.opts.length === 1;
+    const optsHTML = def.opts.map((o, i) => {
+      const isHide = o.tag === 'hide';
+      const cls = `opt-btn${isFixed ? ' fixed' : ''}${isHide ? ' hide-opt' : ''}`;
+      const tip = o.text ? o.text.substring(0, 90) + '…' : '(bullet hidden)';
+      return `<button class="${cls}" id="opt-${def.id}-${i}" title="${tip}" onclick="setOpt('${def.id}',${i})">${o.tag}</button>`;
+    }).join('');
+    row.innerHTML = `<div class="slot-body"><div class="slot-name">${def.name}</div><div class="slot-opts">${optsHTML}</div></div>`;
+    list.appendChild(row);
+  });
+}
+
+// ── Init ──────────────────────────────────────────────────────────────
+function init() {
+  const pillWrap = document.getElementById('bio-pills');
+  Object.entries(BIOS).forEach(([key, bio]) => {
+    const p = document.createElement('div');
+    p.className = 'bio-pill'; p.dataset.key = key;
+    p.title = bio.text.substring(0, 100) + '…';
+    p.textContent = key;
+    p.onclick = () => setBio(key);
+    pillWrap.appendChild(p);
+  });
+  const chipWrap = document.getElementById('team-chips');
+  TEAMS.forEach((t,i) => {
+    const c = document.createElement('div');
+    c.className = 'chip team-chip'; c.textContent = t.label;
+    c.onclick = () => setTeam(i);
+    chipWrap.appendChild(c);
+  });
+  buildSlotList('ja-slot-list', JA_SLOT_DEFS);
+  buildSlotList('jb-slot-list', JB_SLOT_DEFS);
+  buildSlotList('misc-slot-list', MISC_SLOT_DEFS);
+  render();
+}
+
+init();
+</script>

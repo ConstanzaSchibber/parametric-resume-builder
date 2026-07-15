@@ -1,0 +1,298 @@
+%______________________________________________________________________________________________________________________
+% Parametric resume — example persona "Alex Rivera", Software Engineer
+% All content choices are controlled by named variables injected at compile time.
+% Build via the configurator command, build.sh, or compile.sh. Compiles standalone too (defaults apply).
+%
+% The persona is intentionally ONE coherent person: a backend-leaning full-stack
+% engineer. Variants reframe the same underlying work with a different emphasis
+% (systems/performance vs. product delivery) — they never invent a different career.
+%
+% ===== VARIABLES =====
+% \biover      — bio version: general | systems | product
+% \layout      — resume structure:
+%                  threeroles — Experience (both jobs + internship), Education, Skills
+%                  research   — Industry Experience, Portfolio Project, Research Experience, Education, Skills
+%                  portfolio  — Experience (both jobs), Portfolio Project, Education, Skills
+% \teamlabel   — free-text team name in the current-role header
+% \showcert    — true/false: show Certifications section
+%
+% Job A (Northwind Analytics) bullets — max 3:
+%   \jaone   streaming | dashboards | leadership   — same launch, three framings
+%   \jatwo   latency | reliability
+%   \jathree mentoring | tooling | hide            — optional third bullet (default hide)
+%
+% Job B (Lakeshore Labs) bullets — max 3 (third is fixed):
+%   \jbone   fullstack | metering
+%   \jbtwo   migration | testing
+%
+% Internship (Harborview Systems) — 2 bullets (second is fixed):
+%   \inone   logsearch | releasenotes
+%
+% Research role (Data Systems Lab) — 2 bullets (second is fixed):
+%   \rone    harness | paper
+%
+% Portfolio project:
+%   \projfocus systems | product                   — swaps framing of project bullets 1 & 3
+%
+% Skills:
+%   \sline   gofirst | tsfirst                     — ordering of the Languages line
+%
+% Skill group visibility (true / false):
+%   \showsys    — Systems & Infrastructure (default true)
+%   \showweb    — Product & Web (default true)
+%   \showcomm   — Collaboration (default false)
+%   \showprog   — Languages (default true)
+%   \showoncall — inline: appends Incident Response & On-Call to the Systems line (default true)
+% ================================================================
+
+\ifx\biover\undefined\def\biover{general}\fi
+\ifx\layout\undefined\def\layout{threeroles}\fi
+\ifx\teamlabel\undefined\def\teamlabel{Platform}\fi
+\ifx\showcert\undefined\def\showcert{false}\fi
+\ifx\jaone\undefined\def\jaone{streaming}\fi
+\ifx\jatwo\undefined\def\jatwo{latency}\fi
+\ifx\jathree\undefined\def\jathree{hide}\fi
+\ifx\jbone\undefined\def\jbone{fullstack}\fi
+\ifx\jbtwo\undefined\def\jbtwo{migration}\fi
+\ifx\inone\undefined\def\inone{logsearch}\fi
+\ifx\rone\undefined\def\rone{harness}\fi
+\ifx\projfocus\undefined\def\projfocus{systems}\fi
+\ifx\sline\undefined\def\sline{gofirst}\fi
+\ifx\showsys\undefined\def\showsys{true}\fi
+\ifx\showweb\undefined\def\showweb{true}\fi
+\ifx\showcomm\undefined\def\showcomm{false}\fi
+\ifx\showprog\undefined\def\showprog{true}\fi
+\ifx\showoncall\undefined\def\showoncall{true}\fi
+
+% Value anchors for \ifx comparisons (zero stray tokens when a condition is false).
+% Anchor names must be letters only; values may contain digits.
+\def\Vtrue{true}
+\def\Vthreeroles{threeroles}
+\def\Vresearch{research}
+\def\Vportfolio{portfolio}
+\def\Vstreaming{streaming}
+\def\Vdashboards{dashboards}
+\def\Vleadership{leadership}
+\def\Vlatency{latency}
+\def\Vreliability{reliability}
+\def\Vmentoring{mentoring}
+\def\Vtooling{tooling}
+\def\Vfullstack{fullstack}
+\def\Vmetering{metering}
+\def\Vmigration{migration}
+\def\Vtesting{testing}
+\def\Vlogsearch{logsearch}
+\def\Vreleasenotes{releasenotes}
+\def\Vharness{harness}
+\def\Vpaper{paper}
+\def\Vsystems{systems}
+\def\Vproduct{product}
+\def\Vgofirst{gofirst}
+\def\Vtsfirst{tsfirst}
+
+\renewenvironment{itemize}{
+  \begin{list}{}{
+  }
+}{
+  \end{list}%
+}
+
+\documentclass{resume}
+\usepackage{enumitem}
+\usepackage{etoolbox}
+% Tighten the class's inter-section spacing (default \bigskip) so every
+% variant fits one page. Remove or change to taste.
+\renewcommand{\sectionskip}{\smallskip}
+\usepackage{fontawesome}
+\usepackage[left=0.4in,top=0.2in,right=0.5in,bottom=0.2in]{geometry}
+\usepackage{hyperref}
+\usepackage[scaled]{helvet}
+\renewcommand\familydefault{\sfdefault}
+\usepackage[T1]{fontenc}
+
+\name{Alex Rivera}
+% Note: keep the header links plain text. The class prints this block in an
+% \AtBeginDocument hook that runs before hyperref is initialized, so \href
+% here breaks the build. \href works fine in the document body.
+\address{\footnotesize \faEnvelope~alex.rivera@example.com \quad \faLinkedin~linkedin.com/in/alex-rivera-example \quad \faGithub~github.com/alexrivera-example \quad \faPhone~555-555-0123}
+
+%--------------------------------------------------
+% ROLE BLOCKS
+% Each role is defined ONCE as a macro; the layout switch below assembles them.
+% (Bullet conditionals expand when the macro is used, so \ifx works normally.)
+%--------------------------------------------------
+
+\newcommand{\NorthwindBlock}{%
+\hspace{-0.2in}  \textbf{Software Engineer,  Northwind Analytics}, \teamlabel{} team, Chicago, IL \hfill 03/2023--Present
+\begin{itemize}[leftmargin=0.2in]    \setlength\itemsep{-0.2em}
+{\small
+\ifx\jaone\Vstreaming\item Redesigned the ingestion service behind customer dashboards, moving from batch polling to a streaming pipeline (Kafka, Go) and cutting data freshness from 15 minutes to under 30 seconds at 20K events/sec.\fi
+\ifx\jaone\Vdashboards\item Led engineering for the real-time dashboards launch, the company's most-requested feature, partnering with design and product from prototype through GA for 800+ customer accounts.\fi
+\ifx\jaone\Vleadership\item Owned the real-time dashboards initiative end to end: scoped the rollout with product, coordinated two other engineers, and shipped the streaming backend that took data freshness from 15 minutes to under 30 seconds.\fi
+\ifx\jatwo\Vlatency\item Cut p99 API latency 60\% by profiling hot paths, adding query-level caching, and rewriting the database access patterns of the two worst-offending endpoints.\fi
+\ifx\jatwo\Vreliability\item Drove the reliability push that took the platform from 99.5\% to 99.95\% uptime: defined SLOs, added load-shedding, and rewrote the on-call runbook, halving weekly pages.\fi
+\ifx\jathree\Vmentoring\item Mentored two interns and a new-grad engineer through their first production launches; wrote the onboarding guide now used across the organization.\fi
+\ifx\jathree\Vtooling\item Built internal CLI tooling for service scaffolding and deploy previews, adopted by all six backend teams.\fi
+}
+\end{itemize}
+{\small \textbf{Tech Stack:} Go, TypeScript, Kafka, Postgres, Redis, Kubernetes, Grafana}\par\smallskip
+}
+
+\newcommand{\LakeshoreBlock}{%
+\hspace{-0.2in}  \textbf{Software Engineer,  Lakeshore Labs}, Chicago, IL \hfill 07/2020--03/2023
+\begin{itemize}[leftmargin=0.2in]    \setlength\itemsep{-0.2em}
+{\small
+\ifx\jbone\Vfullstack\item Shipped the customer-facing usage-analytics feature end to end (React, TypeScript, Node.js), which became a top-three driver of enterprise renewals.\fi
+\ifx\jbone\Vmetering\item Built the metering and usage-aggregation service (Node.js, Postgres) behind customer-facing analytics, processing 5M events per day with exactly-once semantics.\fi
+\ifx\jbtwo\Vmigration\item Led the migration from a legacy cron-based monolith to containerized workers on Kubernetes, cutting deploy time from 45 minutes to 5 and enabling per-service scaling.\fi
+\ifx\jbtwo\Vtesting\item Introduced contract testing and CI gates across three services, roughly halving production incidents caused by integration bugs.\fi
+\item Interviewed and onboarded engineers as the team grew from 4 to 11.
+}
+\end{itemize}
+{\small \textbf{Tech Stack:} TypeScript, Node.js, React, Postgres, Docker, Kubernetes}\par\smallskip
+}
+
+\newcommand{\InternBlock}{%
+\hspace{-0.2in}  \textbf{Software Engineering Intern,  Harborview Systems}, Seattle, WA \hfill 06/2019--09/2019
+\begin{itemize}[leftmargin=0.2in]    \setlength\itemsep{-0.2em}
+{\small
+\ifx\inone\Vlogsearch\item Built an indexed log-search web tool for the support team, replacing grep-over-SSH and cutting median ticket investigation time by half.\fi
+\ifx\inone\Vreleasenotes\item Automated release-notes generation from merged pull requests, saving the team several hours per release and standardizing changelog quality.\fi
+\item Shipped to production before the internship ended; received and accepted a return offer for a final-year part-time role.
+}
+\end{itemize}
+{\small \textbf{Tech Stack:} Python, Elasticsearch, Flask}\par\smallskip
+}
+
+\newcommand{\ResearchBlock}{%
+\hspace{-0.2in}  \textbf{Research Assistant,  Data Systems Lab}, State University \hfill 09/2018--06/2020
+\begin{itemize}[leftmargin=0.2in]    \setlength\itemsep{-0.2em}
+{\small
+\ifx\rone\Vharness\item Built the benchmarking harness for the lab's query-optimization research, running 10K+ experiment configurations reproducibly on a shared cluster.\fi
+\ifx\rone\Vpaper\item Co-authored a workshop paper on adaptive query optimization; implemented the prototype and ran all experiments.\fi
+\item Maintained the lab's shared experiment infrastructure used by six graduate students.
+}
+\end{itemize}
+{\small \textbf{Tech Stack:} C++, Python, Slurm, Linux}\par\smallskip
+}
+
+\newcommand{\ProjectSection}{%
+\begin{rSection}{Portfolio Project}
+\hspace{-0.2in} Transit Delay Tracker — open-source project (2025) \hfill \href{https://github.com/alexrivera-example/transit-tracker}{github.com/alexrivera-example/transit-tracker}
+{\small
+\begin{itemize}[leftmargin=0.2in]    \setlength\itemsep{-0.2em}
+\ifx\projfocus\Vsystems\item Built a Go service ingesting live transit feeds (2M+ records/day) with Redis caching and Postgres storage, running with full observability on a \$5/month VPS.\fi
+\ifx\projfocus\Vproduct\item Built and launched a web app answering a real commuter question, ``should I leave now or wait?'', from live transit feeds; 1,200 weekly users and a public API.\fi
+\item Wrote the data pipeline handling schedule changes and feed outages; open source with CI and a reproducible local setup.
+\ifx\projfocus\Vsystems\item Load-tested and tuned the ingestion path to absorb 10x feed bursts during citywide service disruptions.\fi
+\ifx\projfocus\Vproduct\item Iterated the UI from user feedback collected in a public issue tracker; published a technical write-up of the architecture.\fi
+\end{itemize}
+}
+\small{\textbf{Tech Stack:} Go, Redis, Postgres, React, GitHub Actions}
+\end{rSection}
+}
+
+\newcommand{\EducationSection}{%
+\begin{rSection}{Education}
+\hspace{-0.2in}  \textbf{BS in Computer Science}, State University \hfill 2020\\ \vspace{-0.25in}
+\begin{itemize}[leftmargin=0.2in]
+{\small\item Undergraduate research in the Data Systems Lab; teaching assistant for the databases course.}
+\end{itemize}
+\end{rSection}
+}
+
+\begin{document}
+
+%--------------------------------------------------
+% BIO
+% Bio conditionals intentionally use \ifdefstring (etoolbox), not \ifx:
+% paragraph mode tolerates the empty {} group of the false branch.
+%--------------------------------------------------
+\begin{rSection}{Bio}
+\ifdefstring{\biover}{general}{%
+\small{Software engineer with five years of experience building backend services and the product features on top of them. Comfortable owning a feature from API design through frontend delivery, with a track record of improving reliability and performance along the way.}%
+}{}%
+\ifdefstring{\biover}{systems}{%
+\small{Software engineer specializing in backend systems and data infrastructure: high-throughput APIs, streaming pipelines, and the observability that keeps them reliable. Cut latency, incident load, and infrastructure costs on services handling millions of requests per day.}%
+}{}%
+\ifdefstring{\biover}{product}{%
+\small{Product-minded software engineer who ships user-facing features end to end, from API design to frontend polish, in close collaboration with design and product. Known for fast, well-instrumented launches that hold up under real traffic.}%
+}{}%
+\end{rSection}
+
+%--------------------------------------------------
+% LAYOUT SWITCH — assembles the role blocks defined above
+%--------------------------------------------------
+\ifx\layout\Vresearch
+
+%--- RESEARCH: industry, project, research, education ---
+\begin{rSection}{Industry Experience}
+\NorthwindBlock
+\LakeshoreBlock
+\end{rSection}
+\ProjectSection
+\begin{rSection}{Research Experience}
+\ResearchBlock
+\end{rSection}
+\EducationSection
+
+\else\ifx\layout\Vportfolio
+
+%--- PORTFOLIO: experience, project, education ---
+\begin{rSection}{Experience}
+\NorthwindBlock
+\LakeshoreBlock
+\end{rSection}
+\ProjectSection
+\EducationSection
+
+\else
+
+%--- THREEROLES (default): experience with both jobs + internship, education ---
+\begin{rSection}{Experience}
+\NorthwindBlock
+\LakeshoreBlock
+\InternBlock
+\end{rSection}
+\EducationSection
+
+\fi\fi% end layout switch
+
+%--------------------------------------------------
+% CERTIFICATIONS
+%--------------------------------------------------
+\ifx\showcert\Vtrue
+\begin{rSection}{Certifications}
+\hspace{-0.2in} \textbf{AWS Certified Solutions Architect — Associate} \hfill 2023
+\end{rSection}
+\fi
+
+%--------------------------------------------------
+% SKILLS (appears once — after the layout switch)
+%--------------------------------------------------
+\begin{rSection}{Skills \& Expertise}
+{\small
+\ifx\showsys\Vtrue
+\textbf{Systems \& Infrastructure}: Kafka; Kubernetes; Redis; gRPC; Observability (Prometheus, Grafana); Performance \& Load Testing; CI/CD\ifx\showoncall\Vtrue{; Incident Response \& On-Call}\fi\vspace{-0.05in}
+
+\fi
+\ifx\showweb\Vtrue
+\textbf{Product \& Web}: React; TypeScript; Node.js; REST \& GraphQL API Design; Instrumentation \& Feature-Flag Rollouts\vspace{-0.05in}
+
+\fi
+\ifx\showcomm\Vtrue
+\textbf{Collaboration}: Design Partnership; Mentoring; Technical Writing; Interviewing \& Onboarding\vspace{-0.05in}
+
+\fi
+\ifx\showprog\Vtrue
+\ifx\sline\Vgofirst
+\textbf{Languages}: Go, TypeScript, Python, SQL, C++
+\fi
+\ifx\sline\Vtsfirst
+\textbf{Languages}: TypeScript, JavaScript, Go, Python, SQL
+\fi
+\fi
+}
+\end{rSection}
+
+\end{document}
