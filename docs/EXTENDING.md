@@ -103,6 +103,31 @@ handles that you might otherwise be tempted to patch into the class:
   (`\renewcommand{\sectionskip}{\smallskip}`, default is `\bigskip`) to keep
   every variant on one page. Remove it if you prefer the roomier default.
 
+### Avoiding orphaned role headers across a page break
+
+Every named variant in this repo is a one-page PDF, but if you add enough
+content that a variant of yours runs to two pages, LaTeX can break the page
+right after a role's header, stranding it alone at the bottom of one page
+while every bullet under it lands on the next.
+
+Fix it with the `needspace` package instead of a hard `\newpage`:
+
+```latex
+\usepackage{needspace}   % preamble
+
+...
+\needspace{6\baselineskip}
+\textbf{Role Title} \hfill Dates \\      % the role header, inside its block macro
+```
+
+`\needspace{N\baselineskip}` checks how much space is left on the page: if
+fewer than `N` lines remain, it forces the break *before* the header instead
+of after it; otherwise it does nothing. That conditionality is the point —
+unlike `\newpage`, it leaves one-page variants untouched and only kicks in
+for the layouts that actually run long. Tune `N` to roughly cover the header
+plus the first couple of bullets, and repeat the pattern before any other
+role header that could plausibly land at a page boundary.
+
 ### Compile twice
 
 Run `pdflatex` twice to resolve hyperlinks/references. `build.sh`,

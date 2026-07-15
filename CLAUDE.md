@@ -53,6 +53,10 @@ Clean up `.aux/.log/.out` after building. Every variant must stay a
    errors. Header contact info stays plain text; `\href` in the body is fine.
 7. `resume.cls` is Trey Hunner's original, unmodified — `enumitem` and the
    `\sectionskip` override live in `resume_flex.tex`, not the class.
+8. **If a variant runs to two pages**, don't force breaks with `\newpage` —
+   use `\needspace{N\baselineskip}` before a role header so it only breaks
+   when the header would otherwise strand alone with its bullets pushed to
+   the next page. See "Avoiding orphaned role headers" in `docs/EXTENDING.md`.
 
 ## Multi-file sync
 
