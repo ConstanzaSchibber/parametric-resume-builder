@@ -1,6 +1,6 @@
 # Parametric Resume Builder
 
-One LaTeX source file. Dozens of resume variants. Zero version drift.
+One source of truth. Multiple role-focused resumes. Zero version drift.
 
 ## What is this?
 
